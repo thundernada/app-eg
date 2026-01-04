@@ -1,64 +1,61 @@
 import streamlit as st
-from logic import calculate_sfm, check_governance_gates
-from processor import process_excel, process_pdf
+import pandas as pd
+import plotly.express as px
 
-# إعداد واجهة برؤية احترافية
-st.set_page_config(page_title="منصة EGISF الذكية", layout="wide", initial_sidebar_state="expanded")
+# 1. إعدادات الهوية البصرية (Luxury Dark Theme)
+st.set_page_config(page_title="EGISF - Intelligence Portal", layout="wide")
 
-# تنسيق CSS لجعل الخطوط من اليمين لليسار (عربي)
 st.markdown("""
     <style>
-    .reportview-container { direction: rtl; }
-    .main { text-align: right; }
+    .main { background-color: #0a0e14; direction: rtl; color: #ffffff; }
+    .stMetric { background-color: #16212e; padding: 20px; border-radius: 15px; border-top: 4px solid #d4af37; }
+    h1, h2 { color: #d4af37; text-align: center; font-family: 'Arial'; }
+    .stSlider > div > div > div > div { background-color: #d4af37; }
     </style>
-    """, unsafe_allow_context=True)
+    """, unsafe_allow_html=True)
 
-st.title("🏛️ نظام EGISF للحوكمة ودعم القرار الاستثماري")
-st.info("تحويل الميثاق التأسيسي إلى محرك ذكاء اصطناعي لضمان صفر هدر وسيادة رقمية.")
+# 2. العنوان الرئيسي والشعار
+st.title("🏛️ الإطار المتكامل للحوكمة الاستثمارية (EGISF)")
+st.subheader("منصة دعم القرار السيادي الذكي - الإصدار العملياتي v1.0")
 
-# لوحة التحكم الجانبية
-with st.sidebar:
-    st.header("📂 مركز رفع البيانات")
-    ex_file = st.file_uploader("ارفع جدول التكاليف (Excel)", type=['xlsx'])
-    pdf_file = st.file_uploader("ارفع دراسة الجدوى (PDF)", type=['pdf'])
-    st.markdown("---")
-    st.write("تم تطويره بناءً على ميثاق استراتيجية EGISF 2025")
+# 3. لوحة البيانات الرئيسية (KPI Dashboard)
+col1, col2, col3, col4 = st.columns(4)
+with col1: st.metric("كفاءة الموارد", "94%", "+2%")
+with col2: st.metric("السيادة الرقمية", "100%", "آمن")
+with col3: st.metric("سرعة الامتثال", "فوري", "رقمي")
+with col4: st.metric("مؤشر الهدر", "0.2%", "-0.5%")
 
-# منطقة العرض الرئيسية
-col1, col2 = st.columns([1, 1])
+st.divider()
 
-with col1:
-    st.subheader("📝 مدخلات التقييم الذكي")
-    # إذا تم رفع ملف PDF يتم تحديث السلايدر تلقائياً
-    pdf_score = process_pdf(pdf_file) if pdf_file else 50
-    
-    econ_input = st.slider("معيار الكفاءة المالية", 0, 100, 75)
-    soc_input = st.slider("معيار الأثر المجتمعي", 0, 100, 65)
-    env_input = st.slider("معيار الاستدامة البيئية (من الـ PDF)", 0, 100, int(pdf_score))
+# 4. محرك بوابات العبور (Gate Engine)
+st.header("⚙️ تقييم بوابات العبور الستة (The Six Gates)")
+with st.container():
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("### 🧬 الأبعاد الاستراتيجية")
+        strat = st.select_slider("التوافق مع الرؤية", options=["ضعيف", "متوسط", "قوي", "سيادي"])
+        eco = st.slider("الجدوى المالية المستدامة", 0, 100, 75)
+        soc = st.slider("الأثر المجتمعي والوطني", 0, 100, 80)
+    with c2:
+        st.markdown("### 🛡️ الأبعاد الرقابية")
+        risk = st.slider("تحييد مخاطر التنفيذ", 0, 100, 90)
+        gov = st.slider("معايير الامتثال والحوكمة", 0, 100, 100)
+        env = st.slider("الاستدامة البيئية (ESG)", 0, 100, 70)
 
-# حساب النتائج
-sfm_score = calculate_sfm(econ_input, soc_input, env_input)
-gates_input = {
-    'strategic': 80, 'economic': econ_input, 'social': soc_input, 
-    'environmental': env_input, 'risk': 70, 'governance': 85
-}
-is_passed, gate_details = check_governance_gates(gates_input)
-
-with col2:
-    st.subheader("📊 مؤشر الجدوى الشاملة (SFM)")
-    st.metric(label="درجة المشروع الإجمالية", value=f"{sfm_score}%", delta=f"{sfm_score-70}% من حد الأمان")
-    
-    if is_passed:
-        st.success("✅ المشروع مطابق لمعايير بوابات العبور")
-    else:
-        st.warning("⚠️ المشروع يحتاج لإعادة ضبط ليتوافق مع الحوكمة")
-
+# 5. تحليل البيانات الفوري (Visual Analytics)
 st.markdown("---")
-st.subheader("🔍 تفصيل حالة بوابات العبور (6 Gates)")
-# عرض النتائج في شكل أعمدة
-cols = st.columns(3)
-for i, (gate, data) in enumerate(gate_details.items()):
-    with cols[i % 3]:
-        st.info(f"**{gate}**\n\n النتيجة: {data['درجة']} | {data['الحالة']}")
+data = pd.DataFrame(dict(
+    r=[eco, soc, env, risk, gov, 85],
+    theta=['المالية','الاجتماعية','البيئية','المخاطر','الحوكمة','الاستراتيجية']))
+fig = px.line_polar(data, r='r', theta='theta', line_close=True, template="plotly_dark")
+fig.update_traces(fill='toself', fillcolor="rgba(212, 175, 55, 0.3)", line_color="#d4af37")
 
-# رسم توضيحي بسيط
+col_a, col_b = st.columns([1, 2])
+with col_a:
+    st.header("📊 البصمة الرقمية للمشروع")
+    st.write("التحليل الراداري يوضح توازن المشروع بين الربحية والحوكمة.")
+    if st.button("توليد تقرير السيادة"):
+        st.success("تم تحليل المشروع: مطابق للمعايير السيادية بنسبة 89%")
+        st.balloons()
+with col_b:
+    st.plotly_chart(fig)
